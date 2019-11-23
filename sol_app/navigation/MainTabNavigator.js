@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
-import { Platform,View,styles,
-  StyleSheet,Image,ImageBackground,TouchableOpacity,Text,Button,AsyncStorage,
+import { Platform,View,
+  StyleSheet,Image,ImageBackground,TouchableOpacity,Text,TextInput,Button,AsyncStorage,
 
   AppRegistry,
   Linking,
@@ -8,6 +8,8 @@ import { Platform,View,styles,
 import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
 
  
+
+import axios from 'axios';
 
 import TabBarIcon from '../components/TabBarIcon';
 import LinksScreen from '../screens/LinksScreen';
@@ -69,8 +71,69 @@ class QrCode extends React.Component {
     this.setState({ scanned: true });
     AsyncStorage.setItem('qrcode',`${data}`);
     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-    this.props.navigation.navigate('Perchase');
+  //  AsyncStorage.setItem("realCost", `${data.realCost}`);
+    //AsyncStorage.setItem("benefitStoreName", `${data.benefitStoreName}`);
+   // AsyncStorage.setItem("monthPayment", `${data.monthPayment}`);
+   // AsyncStorage.setItem("monthBenefit", `${data.monthBenefit}`);
+    this.findCard(10000,"스타벅스",20000,3000);
   };
+
+  findCard = async( cost, name, pay, benefit ) => {
+    try
+    {
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/pay/makeBestPayment',
+        {
+        "realCost" : `${cost}`,
+        "benefitStoreName" : `${name}`,
+        "monthPayment" : `${pay}`,
+        "monthBenefit" : `${benefit}`,
+        }
+      );
+      if(result.status==200){
+        console.log(result.data);
+        try {
+          await AsyncStorage.setItem("benefitCategory", result.data.benefitCategory);
+        } catch (error) {
+          console.log("Something went wrong", error);
+        }
+      
+        try {
+          await AsyncStorage.setItem("benefitStoreName", result.data.benefitStoreName);
+        } catch (error) {
+          console.log("Something went wrong", error);
+        }
+        try {
+          await AsyncStorage.setItem("finalCardName", result.data.finalCardName);
+        } catch (error) {
+          console.log("Something went wrong", error);
+        }
+        try {
+          await AsyncStorage.setItem("finalCost", ""+result.data.finalCost);
+        } catch (error) {
+          console.log("Something went wrong", error);
+        }
+        try {
+          await AsyncStorage.setItem("realCost", ""+result.data.realCost);
+        } catch (error) {
+            console.log("Something went wrong", error);
+        }
+        this.props.navigation.navigate('Purchase');
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
+}
+
 }
 
 class NewScreen extends React.Component {
@@ -80,19 +143,56 @@ class NewScreen extends React.Component {
     header: null,
   };
   
-
+  state = {
+    name: "",
+    hasCard:0,
+  }
   _onPressLogout= async () => {
-     AsyncStorage.clear();
-      this.props.navigation.navigate('Login');
+    AsyncStorage.clear();
+    this._Logout();
   
   };
+  _Logout = async () =>{
+    try
+    {
+      const result = await axios.get(
+      'http://10.3.17.101:3000/api/auth/logOut'
+      );
+      if(result.status==200){
+        this.props.navigation.navigate('Login');
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
 
+  }
   onPressAddButton= async () => {
     this.props.navigation.navigate('Adds');
   }
 
   onPressBenefitButton= async () => {
     this.props.navigation.navigate('Stat');
+  }
+  _makenew= async() =>{
+    try{
+      const name = await AsyncStorage.getItem("userName");
+      console.log(name);
+      const id = await AsyncStorage.getItem("id");
+      console.log(id);
+      this.setState({name:name});
+    }
+    catch(error){
+
+    }
   }
   render(){
   return (
@@ -113,7 +213,7 @@ class NewScreen extends React.Component {
           <Image style={{height:'40%', justifyContent:'center', alignItems:'center', marginTop:30}} resizeMode="contain" source={require("../assets/images/main/main_logo.png")} />
         </View>
         <View style={{flex:1}}>
-        <TouchableOpacity style={{width:'100%'}} onPress={this._onPressLogout}>
+        <TouchableOpacity style={{width:'100%'}} onPress={this._makenew}>
           <Image style={{height:'40%', justifyContent:'flex-end', alignItems:'flex-end', marginLeft:70, marginTop:40}} resizeMode="contain" source={require("../assets/images/main/button_logout.png")} />
         </TouchableOpacity>
         </View> 
@@ -128,16 +228,49 @@ class NewScreen extends React.Component {
             resizeMode="stretch"
             source={require("../assets/images/main/1_card.png")}
             style={{width: '100%', height: '100%'}}>
+            {this.state.hasCard!=0 ?
+            (
             <TouchableOpacity style={{width:'100%'}} onPress={this.onPressAddButton}>
               <Image style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/1_add.png")} />        
             </TouchableOpacity>
+            ):
+            (
+            <View style={{flex:1}}>
+              <View style={{flex:1,flexDirection:'row'}}>
+                <View style={{flex:1,justifyContent:'center', alignItems:'center'}}>
+                  <Image style={{width:'60%',justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/2_card_1.png")} />        
+                </View>
+                <View style={{flex:1,justifyContent:'center', alignItems:'center'}}>
+                  <Image style={{width:'60%',justifyContent:'center', alignItems:'center'}}  resizeMode="contain" source={require("../assets/images/main/2_card_2.png")} />   
+                </View>
+                <View style={{flex:1,justifyContent:'center', alignItems:'center'}}>
+                  <Image style={{width:'60%',justifyContent:'center', alignItems:'center'}}  resizeMode="contain" source={require("../assets/images/main/2_card_1.png")} />   
+                </View>
+                <View style={{flex:1,justifyContent:'center', alignItems:'center'}}><Text>카드관리</Text></View>
+              </View>
+              <View style={{flex:2}}>
+                <View style={{flex:1}}>
+                <Text>신한 LOVE 카드…
+                </Text>
+                </View>
+                <View style={{flex:3}}>
+                <Text>3개의 카드가
+                  통합되어 있습니다</Text>
+                </View>
+                <View style={{flex:1}}>
+                
+                </View>
+              </View>
+            </View>
+            )
+            }
           </ImageBackground>
         </View>
         <View style={{flex:1}}>
             <View style={{
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',}}><Text>박세영 님의 혜택 현황</Text>
+    alignItems: 'center',}}><Text>{this.state.name}님의 혜택 현황</Text>
             </View>
             <View style={{flex:4}}>
               <View style={{flex:1}}>
@@ -166,7 +299,7 @@ class AddScreen extends React.Component {
 
 
   onPressAddButton= async () => {
-    this.props.navigation.navigate('Add');
+    this.props.navigation.navigate('AddCard');
   }
 
   onPressBackButton= async () => {
@@ -184,7 +317,6 @@ class AddScreen extends React.Component {
                 resizeMode="contain"
                 source={require("../assets/images/main/2_barmain.png")}
                 style={{width: '100%', height: '100%'}}>
-                
               <TouchableOpacity style={{width:'3%', marginTop:28, marginLeft:35, }} onPress={this.onPressBackButton}>
                 <Image style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/2_button_bar.png")} />        
               </TouchableOpacity>
@@ -221,6 +353,253 @@ class AddScreen extends React.Component {
             <Image style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/2_card_2.png")} />        
           </TouchableOpacity>
         </View>
+  </View>
+  );
+}
+}
+class PurchaseScreen extends React.Component {
+
+  static navigationOptions = {
+    header: null,
+  };
+
+  state = {
+    password:"",
+  }
+
+  onPressButton = async() =>{
+    try {
+      const finalCardName = await AsyncStorage.getItem("finalCardName");
+      this.setState({finalCardName:finalCardName});
+      }
+      catch (error) {
+     console.log("Something went wrong", error);
+   }
+    try {
+      const benefitCategory = await AsyncStorage.getItem("benefitCategory");
+      this.setState({benefitCategory:benefitCategory});
+      }
+      catch (error) {
+    console.log("Something went wrong", error);
+  }
+    try {
+      const benefitStoreName = await AsyncStorage.getItem("benefitStoreName");
+      this.setState({benefitStoreName:benefitStoreName});
+      }
+      catch (error) {
+    console.log("Something went wrong", error);
+    }
+    try {
+      const realCost = await AsyncStorage.getItem("realCost");
+      this.setState({realCost:realCost});
+      }
+      catch (error) {
+    console.log("Something went wrong", error);
+    }
+    try {
+      const finalCost = await AsyncStorage.getItem("finalCost");
+      this.setState({finalCost:finalCost});
+      }
+      catch (error) {
+    console.log("Something went wrong", error);
+    }
+    this.onPurchase(this.state.password,this.state.finalCardName,this.state.benefitCategory,this.state.benefitStoreName,this.state.realCost,this.state.finalCost);
+  }
+
+  onPurchase = async(passwd,name,category, store,realcost,finalcost) => {
+    try
+    {
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/pay/autoPay',
+        {
+        "inputPayPassword" : `${passwd}`,
+        "finalCardName" : `${name}`,
+        "benefitCategory" : `${category}`,
+        "benefitStoreName" : `${store}`,
+        "realcost" : 1*(`${realcost}`),
+        "finalcost" : 1*(`${finalcost}`),
+        }
+      );
+      if(result.status==200){
+        console.log("SUccess!");
+        console.log(`${passwd}`);
+        console.log(`${name}`);
+        console.log(`${category}`);
+        console.log(`${store}`);
+        console.log(`${realcost}`);
+        console.log(`${finalcost}`);
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
+}
+  render(){
+    return (
+      <View style={styles.container}>
+        <ImageBackground
+          source={require("../assets/images/main/purchase_base.png")}
+          style={{width: '100%'}}>
+        <View style={{flex: 1,}}>
+                <Text>AAA</Text>
+        </View>
+        <View style={{flex: 1,}}>
+              <Text>BBB</Text>
+        </View>
+        <TextInput 
+                secureTextEntry={true} 
+                style={styles.textForm}
+                value={this.state.password}
+                onChangeText={(password) => this.setState({password})}
+                />
+        </ImageBackground>
+        <View>
+          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
+            <Image source={ require("../assets/images/main/purchase_button.png")} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );  
+}
+}
+
+class CardScreen extends React.Component {
+
+
+  static navigationOptions = {
+    header: null,
+  };
+  state = {
+    cardnum1:"",
+    cardnum2:"",
+    cardnum3:"",
+    cardnum4:"",
+    day:"",
+    cvc:"",
+    password:"",
+  }
+
+  onPressButton= async () => {
+    this.addCard(this.state.cardnum1+'-'+this.state.cardnum2+'-'+this.state.cardnum3+'-'+this.state.cardnum4,this.state.password,this.state.cvc,this.state.day);
+  }
+
+  addCard= async (card,pass,cvc,day) => {
+    try
+    {
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/card/enrollCard',
+        {
+        "cardNoEnc" : `${card}`,
+        "passwd" : `${pass}`,
+        "cvv2" : `${cvc}`,
+        "validTrm" : `${day}`,
+        }
+      );
+      if(result.status==200){
+        Alert.alert("Add Success.");
+        this.props.navigation.navigate('Main');
+      } else{
+        Alert.alert("Something Wrong. => "+result.status);
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
+}
+
+  render(){
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: '#EBEBEB',}}>
+        <View style={{
+          width:'100%',
+          height:'13%',}}>
+          <ImageBackground 
+            resizeMode="contain"
+            source={require("../assets/images/main/add_bar.png")}
+            style={{width: '100%', height: '100%'}}>
+          </ImageBackground>
+          </View>
+        <View style={{
+          width:'100%',resizeMode:"contain" ,
+          height:'80%', justifyContent:'center', alignItems:'center'}}>
+          <ImageBackground
+            resizeMode="contain"
+            source={require("../assets/images/login/4_base.png")}
+            style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} >
+            <View style={styles.container}></View>
+            <View style={{flex:3, justifyContent:'center', alignItems:'center'}}>
+              <View style={{
+                flex:1,
+                width:'20%', flexDirection:"row",
+                justifyContent:'center', alignItems:'center'}}>
+               <TextInput 
+                style={styles.textForm}
+                value={this.state.cardnum1}
+                onChangeText={(cardnum1) => this.setState({cardnum1})}
+                /><TextInput 
+                style={styles.textForm} 
+                value={this.state.cardnum2}
+                onChangeText={(cardnum2) => this.setState({cardnum2})}
+                /><TextInput 
+                style={styles.textForm} 
+                value={this.state.cardnum3}
+                onChangeText={(cardnum3) => this.setState({cardnum3})}
+                /><TextInput 
+                style={styles.textForm} 
+                value={this.state.cardnum4}
+                onChangeText={(cardnum4) => this.setState({cardnum4})}
+                />
+              </View>
+              <View style={styles.container}>
+                <TextInput 
+                style={styles.textForm} 
+                placeholder={"유효기간"}
+                value={this.state.day}
+                onChangeText={(day) => this.setState({day})}
+                />
+              </View>
+              <View style={styles.container}>
+                <TextInput 
+                style={styles.textForm} 
+                placeholder={"cvc"}
+                value={this.state.cvc}
+                onChangeText={(cvc) => this.setState({cvc})}
+                />
+              </View>
+              <View style={styles.container}>
+                <TextInput 
+                style={styles.textForm} 
+                placeholder={"password"}
+                value={this.state.password}
+                onChangeText={(password) => this.setState({password})}
+                />
+              </View>
+            </View>
+            <View style={styles.container}/>
+            </ImageBackground> 
+            <View>
+              <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
+                <Image source={require("../assets/images/login/2_button.png")} />
+              </TouchableOpacity>
+            </View>
+          </View>      
+       
   </View>
   );
 }
@@ -324,6 +703,7 @@ class RecommendScreen extends React.Component {
 const LinksStack = createStackNavigator(
   {
     Links: QrCode,
+    Purchase: PurchaseScreen,
   },
   config
 );
@@ -365,9 +745,11 @@ NewStack.path = '';
 const AddStack = createStackNavigator(
   {
     Add: AddScreen,
+    AddCard: CardScreen,
   },
   config
 );
+
 
 AddStack.navigationOptions = {
   showLabel: false,
@@ -443,6 +825,23 @@ RecommendStack.navigationOptions = {
 };
 
 SettingsStack.path = '';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textForm: {
+      borderWidth: 0.5,
+      borderColor: '#888',
+      width: '70%',
+      height: '40%',
+      paddingLeft: 5,
+      paddingRight: 5,
+      marginBottom: 5,
+  },
+});
 
 const tabNavigator = createBottomTabNavigator({
   News : NewStack,

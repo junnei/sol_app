@@ -48,7 +48,7 @@ class SignInScreen extends React.Component {
                 />
             </View>
             <View style={styles.container}>
-              <TextInput 
+              <TextInput secureTextEntry={true} 
                 style={styles.textForm} 
                 placeholder={"Password"}
                 value={this.state.password}
@@ -71,7 +71,6 @@ class SignInScreen extends React.Component {
   }
 
   _signInAsync = async () => {
-    this._setUser(this.state.id);
     this.props.navigation.navigate('App');
   };
 
@@ -79,15 +78,6 @@ class SignInScreen extends React.Component {
     console.log(this.state.id);
     console.log(this.state.password);
     this.verifyLogin(this.state.id,this.state.password);
-  };
-
-  _setUser = async (id) => {
-    try {
-      await AsyncStorage.setItem('id',`${id}`);
-    } catch (error) {
-      this.props.navigation.navigate('Login');
-      Alert.alert("Server Error.");
-    }
   };
 
   verifyLogin = async(id, password) => {
@@ -102,7 +92,7 @@ class SignInScreen extends React.Component {
       );
       if(result.status==200){
         this.setState({isVerify:true});
-        this._setUser(this.state.id);
+        AsyncStorage.setItem('id',`${id}`);
         this.props.navigation.navigate('Main');
       } else{
         Alert.alert("Server Error.");
@@ -339,7 +329,7 @@ class OtherScreen extends React.Component {
                 />
             </View>
             <View style={styles.container}>
-              <TextInput 
+              <TextInput secureTextEntry={true} 
                 style={styles.textForm} 
                 placeholder={"Password"}
                 value={this.state.password}
@@ -354,7 +344,7 @@ class OtherScreen extends React.Component {
         <View style={{flex:3}}/>
         <View>
           <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
-            <Image source={require("../assets/images/login/3_button.png")} />
+            <Image source={ this.state.password != "" && this.state.id ? require("../assets/images/login/2_button.png") : require("../assets/images/login/3_button.png") } />
           </TouchableOpacity>
         </View>
       </View>
@@ -450,7 +440,7 @@ class NameScreen extends React.Component {
         <View style={{flex:3}}/>
         <View>
           <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
-            <Image source={require("../assets/images/login/3_button.png")} />
+            <Image source={ this.state.name != "" && this.state.number != "" ? require("../assets/images/login/2_button.png") : require("../assets/images/login/3_button.png") } />
           </TouchableOpacity>
         </View>
       </View>
@@ -480,6 +470,18 @@ class NameScreen extends React.Component {
       );
       if(result.status==200){
         Alert.alert("Success.");
+        try{
+          await AsyncStorage.setItem("userName", this.state.name);
+        }
+        catch(error){
+
+        }
+        try{
+          AsyncStorage.setItem("encIdno", this.state.number);
+        }
+        catch(error){
+
+        }
         this.props.navigation.navigate('Phone');
       } else{
         Alert.alert("Something Wrong. => "+result.status);
@@ -573,11 +575,12 @@ class PhoneScreen extends React.Component {
             <Text style={{fontSize:16}}>휴대폰 본인인증을 해주세요</Text>
           </View>
         </View>
-        <View style={{flex:6, width:'100%',justifyContent:'center', alignItems:'center',}} >
-          <ImageBackground 
-            source={require("../assets/images/login/3_base.png")}
+        <View style={{flex:12, width:'100%',justifyContent:'center', alignItems:'center'}} >
+        <ImageBackground 
+            source={require("../assets/images/login/4_base.png")}
+            resizeMode="contain"
             style={{width: '100%', height: '100%'}}>
-            <View style={{flex:2, width:'80%', marginLeft:40, flexDirection:'row',justifyContent:'center', alignItems:'center' }}>
+          <View style={{flex:3, width:'80%', marginTop:20, marginLeft:40, flexDirection:'row',justifyContent:'center', alignItems:'center' }}>
               <View style={styles.container}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center', }} resizeMode='contain' source={require("../assets/images/main/button_skt.png")} />
               </View>
@@ -591,62 +594,94 @@ class PhoneScreen extends React.Component {
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center', }} resizeMode='contain' source={require("../assets/images/main/button_alddle.png")} />
               </View>
             </View>
-            <View style={{flex:2,width:'80%', alignItems:'center'}}>
-              <View style={{flex:1, flexDirection:'row', alignItems:'center'}}>
+            <View style={{flex:4, width:'100%', height:'100%', flexDirection:'row', justifyContent:'center', alignItems:'center'}}>
+              <View style={{flex:3,width:'100%'}}>
                 <TextInput 
-                  style={styles.textForm }
-                  placeholder={"핸드폰번호"}
+                
+                  style={{
+                    borderWidth: 0.5,
+                    borderColor: '#888',
+                    width: '70%',
+                    height: '50%',
+                    marginLeft: 50,
+                    marginBottom:11}}
+                  placeholder={"   핸드폰번호"}
                   value={this.state.phone}
                   onChangeText={(phone) => this.setState({phone})}
                   />
-                <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressPhone }>
-                  <Image source={require("../assets/images/main/button_phone.png")} />
+              </View>
+              <View style={{flex:1}}>   
+                <TouchableOpacity style={{width:'100%', marginLeft:-30}} onPress={ this.onPressPhone }>
+                  <Image style={{width:'80%', height:'80%', resizeMode:'contain'}}source={require("../assets/images/main/button_phone.png")} />
                 </TouchableOpacity>
               </View>
-              <View style={{flex:3, alignItems:'center'}}>
+            </View>
+            <View style={{flex:4}}>
               <TextInput 
-                style={styles.textForm} 
-                placeholder={"인증번호"}
+                style={{
+                  borderWidth: 0.5,
+                  borderColor: '#888',
+                  width: '73%',
+                  height: '50%',
+                  marginLeft: 50,
+                  marginTop:-15}} 
+                placeholder={"   인증번호"}
                 value={this.state.val}
                 onChangeText={(val) => this.setState({val})}
                 />
-              </View>
             </View>
-            <View style={styles.container} flexDirection='row'>
-              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck0}>
+          <View style={{flex:10, marginTop:-50}}>
+            <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',}} flexDirection='row'>
+                <TouchableOpacity style={{width:20, marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck0}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[0] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
               </TouchableOpacity>
               <Text style={{fontSize:11,marginTop:15}}>  전체동의</Text>
             </View>
-            <View style={styles.container} flexDirection='row'>
-              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck1}>
+            <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',}} flexDirection='row'>
+              <TouchableOpacity style={{width:20, marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck1}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[1] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
               </TouchableOpacity>
               <Text style={{fontSize:11,marginTop:15}}>  개인정보 수집/이용 (필수)</Text>
             </View>
-            <View style={styles.container} flexDirection='row'>
-              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck2}>
+            <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',}} flexDirection='row'>
+              <TouchableOpacity style={{width:20, marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck2}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[2] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
               </TouchableOpacity>
               <Text style={{fontSize:11,marginTop:15}}>  고유식별정보처리 (필수)</Text>
             </View>
-            <View style={styles.container} flexDirection='row'>
-              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck3}>
+            <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',}} flexDirection='row'>
+              <TouchableOpacity style={{width:20, marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck3}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[3] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
               </TouchableOpacity>
               <Text style={{fontSize:11,marginTop:15}}>  통신사 이용약관 (필수)</Text>
             </View>
-            <View style={styles.container} flexDirection='row'>
-              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck4}>
+            <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',}} flexDirection='row'>
+              <TouchableOpacity style={{width:20, marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck4}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[4] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
               </TouchableOpacity>
               <Text style={{fontSize:11,marginTop:15}}>  서비스 이용약관 (필수)</Text>
             </View>
+          </View>
           </ImageBackground>
         </View>
-        <View style={{flex:3}}/>
+        <View style={{flex:5}}/>
         <View>
-          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
+          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressMine}>
             <Image source={require("../assets/images/login/3_button.png")} />
           </TouchableOpacity>
         </View>
@@ -655,12 +690,79 @@ class PhoneScreen extends React.Component {
   }
 
   onPressPhone= async () => {
-    this.setState({val:"123456"});
+    const encId = await AsyncStorage.getItem("encIdno");
+    this.onPhone(1,this.state.phone.slice(0,3), this.state.phone.slice(3,7), this.state.phone.slice(7,11),encId);
   }
 
-  onPressButton= async () => {
-    this.props.navigation.navigate('Password');
+  onPhone = async(code, phone1,phone2,phone3,encIdno) => {
+    try
+    {
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/auth/phoneAuthRequest',
+        {
+        "telcoTpCode" : `${code}`,
+        "mobiNo1" : `${phone1}`,
+        "mobiNo2" : `${phone2}`,
+        "mobiNo3" : `${phone3}`,
+        "encIdno" : `${encIdno}`
+        }
+      );
+      if(result.status==200){
+        this.setState({val:result.data.MsgCntt});
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
   }
+
+  onPressMine = async() => {
+    const id = await AsyncStorage.getItem("id");
+    const encIdno = await AsyncStorage.getItem("encIdno");
+    this.onPress(id,this.state.val,1, this.state.phone.slice(0,3), this.state.phone.slice(3,7), this.state.phone.slice(7,11),encIdno);
+
+  }
+  onPress = async(id,number,code, phone1,phone2,phone3,encIdno) => {
+    try
+    {
+
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/auth/phoneAuthResponse',
+        {
+        "realID" : `${id}`,
+        "MsgCntt" : `${number}`,
+        "telcoTpCode" : `${code}`,
+        "mobiNo1" : `${phone1}`,
+        "mobiNo2" : `${phone2}`,
+        "mobiNo3" : `${phone3}`,
+        "encIdno" : `${encIdno}`
+        }
+      );
+      if(result.status==200){
+        
+        this.props.navigation.navigate('Password');
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
+}
 
   _signInAsync = async () => {
     this.props.navigation.navigate('Login');
@@ -672,6 +774,10 @@ class PasswordScreen extends React.Component {
   static navigationOptions = {
     title: '비밀번호 설정',
   };
+
+  state={
+    pass:"",
+  }
 
   render() {
     return (
@@ -685,22 +791,60 @@ class PasswordScreen extends React.Component {
           </View>
         </View>
         <View style={{flex:6, width:'100%',}}>
-          <TextInput style={{fontSize:16}}/>
+        <TextInput secureTextEntry={true} 
+                style={{
+                  borderWidth: 0.5,
+                  borderColor: '#888',
+                  width: '73%',
+                  height: '50%',
+                  marginLeft: 50,
+                  marginTop:-15}} 
+                placeholder={"2차 비밀번호"}
+                value={this.state.pass}
+                onChangeText={(pass) => this.setState({pass})}
+                />
         </View>
         <View style={{flex:3}}/>
         <View>
-          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressButton}>
+          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressPass}>
             <Image source={require("../assets/images/login/3_button.png")} />
           </TouchableOpacity>
         </View>
       </View>
     );
   }
-
-  onPressButton= async () => {
-    this.props.navigation.navigate('Finish');
+  onPressPass = async() => {
+    const id = await AsyncStorage.getItem("id");
+    this.onPass(id,this.state.pass)
   }
+  onPass= async(id,pass) => {
+    try
+    {
 
+      const result = await axios.post(
+      'http://10.3.17.101:3000/api/auth/setPayPassword',
+        {
+        "realID" : `${id}`,
+        "payPassword" : `${pass}`
+        }
+      );
+      if(result.status==200){
+        
+        this.props.navigation.navigate('Finish');
+      } else{
+        Alert.alert("Server Error.");
+      }
+    }
+    catch(error)
+    {
+      if(error.response.status==409){
+        Alert.alert(error.response.data.message);
+      }
+      else{
+        Alert.alert("Server Error.");
+      }
+    }
+}
   _signInAsync = async () => {
     this.props.navigation.navigate('Login');
   };
