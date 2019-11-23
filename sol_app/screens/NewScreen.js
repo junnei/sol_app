@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { MonoText } from '../components/StyledText';
+import tabNavigator from '../navigation/MainTabNavigator';
 
 export default function NewScreen() {
 
@@ -26,7 +27,7 @@ export default function NewScreen() {
             resizeMode="stretch"
             source={require("../assets/images/main/1_card.png")}
             style={{width: '100%', height: '100%'}}>
-          <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressAddButton}>
+          <TouchableOpacity style={{width:'100%'}} onPress={onPressAddButton()}>
             <Image style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/1_add.png")} />        
           </TouchableOpacity>
           </ImageBackground>
@@ -36,7 +37,7 @@ export default function NewScreen() {
             </View>
             <View style={{flex:4}}>
               <View style={{flex:1}}>
-              <TouchableOpacity style={{ width:'100%'}} onPress={ this.onPressBenefitButton}>
+              <TouchableOpacity style={{ width:'100%'}} onPress={onPressBenefitButton()}>
                 <Image style={{ width:'100%', height:'100%', justifyContent:'center', alignItems:'center'}} resizeMode="contain" source={require("../assets/images/main/1_benefit.png")} />        
               </TouchableOpacity>
               </View>
