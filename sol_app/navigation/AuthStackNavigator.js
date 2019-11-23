@@ -57,7 +57,7 @@ class SignInScreen extends React.Component {
             </View>
             <View style={{flex:1, flexDirection:'row'}}>
               <View style={styles.container}>
-                <Button title="Sign in!" onPress={this._signInAsync} />
+                <Button title="Sign Up!" onPress={this._signInAsync} />
               </View>
               <View style={styles.container}>
                 <Button title="Log in!" onPress={this._doLogin.bind(this)}/>
@@ -416,7 +416,7 @@ class NameScreen extends React.Component {
     return (
       <View style={styles.container}>
         <View style={{height:'4%', width:'100%', alignItems:'center', justifyContent: 'flex-end',}}>
-          <Image style={{width:'80%', justifyContent:'center', alignItems:'center',}} source={require("../assets/images/login/2_line.png")} />
+          <Image style={{width:'80%', justifyContent:'center', alignItems:'center',}} resizeMode='contain' source={require("../assets/images/login/3_line.png")} />
         </View>
         <View style={{flex:2}}>
           <View style={styles.container}>
@@ -506,25 +506,78 @@ class PhoneScreen extends React.Component {
   state = {
     phone: "",
     val: "",
-    checked: []
+    checked: [false,false,false,false,false],
+    allcheck: false,
   };
 
+  allCheck(){
+    if(this.state.checked==[true,true,true,true,true])
+    {
+      this.setState({allcheck:true});
+    }
+    else if(this.state.checked==[false,true,true,true,true]){
+      this.setState({allcheck:true});
+    }
+    else{
+      this.setState({allcheck:false});
+    }
+  }
+
+
+  onPressCheck0= async () => {
+    if(this.state.checked[0]==false){
+      this.setState({checked:[true,true,true,true,true]});
+      this.setState({allcheck:true});
+    }
+    else{
+      this.setState({checked:[false,false,false,false,false]});
+      this.setState({allcheck:false});
+    }
+  }
+
+  onPressCheck1= async () => {
+    if(this.state.checked[1]==false)
+      this.setState({checked:this.state.checked.slice(0,1).concat(true).concat(this.state.checked.slice(2,5))});
+    else
+      this.setState({checked:this.state.checked.slice(0,1).concat(false).concat(this.state.checked.slice(2,5))});
+  }
+
+  onPressCheck2= async () => {
+    if(this.state.checked[2]==false)
+      this.setState({checked:this.state.checked.slice(0,2).concat(true).concat(this.state.checked.slice(3,5))});
+    else
+      this.setState({checked:this.state.checked.slice(0,2).concat(false).concat(this.state.checked.slice(3,5))});
+  }
+
+  onPressCheck3= async () => {
+    if(this.state.checked[3]==false)
+      this.setState({checked:this.state.checked.slice(0,3).concat(true).concat(this.state.checked.slice(4,5))});
+    else
+      this.setState({checked:this.state.checked.slice(0,3).concat(false).concat(this.state.checked.slice(4,5))});
+  }
+
+  onPressCheck4= async () => {
+    if(this.state.checked[4]==false)
+      this.setState({checked:this.state.checked.slice(0,4).concat(true)});
+    else
+      this.setState({checked:this.state.checked.slice(0,4).concat(false)});
+  }
   render() {
     return (
       <View style={styles.container}>
         <View style={{height:'4%', width:'100%', alignItems:'center', justifyContent: 'flex-end',}}>
-          <Image style={{width:'80%', justifyContent:'center', alignItems:'center',}} source={require("../assets/images/login/3_line.png")} />
+          <Image style={{width:'80%', justifyContent:'center', alignItems:'center',}} resizeMode='contain' source={require("../assets/images/login/3_line.png")} />
         </View>
         <View style={{flex:2}}>
           <View style={styles.container}>
             <Text style={{fontSize:16}}>휴대폰 본인인증을 해주세요</Text>
           </View>
         </View>
-        <View style={{flex:6, width:'100%',}}>
+        <View style={{flex:6, width:'100%',justifyContent:'center', alignItems:'center',}} >
           <ImageBackground 
             source={require("../assets/images/login/3_base.png")}
             style={{width: '100%', height: '100%'}}>
-            <View style={{flex:2,width:'80%', flexDirection:'row'}}>
+            <View style={{flex:2, width:'80%', marginLeft:40, flexDirection:'row',justifyContent:'center', alignItems:'center' }}>
               <View style={styles.container}>
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center', }} resizeMode='contain' source={require("../assets/images/main/button_skt.png")} />
               </View>
@@ -538,15 +591,15 @@ class PhoneScreen extends React.Component {
                 <Image style={{width:'100%', justifyContent:'center', alignItems:'center', }} resizeMode='contain' source={require("../assets/images/main/button_alddle.png")} />
               </View>
             </View>
-            <View style={{flex:2}}>
+            <View style={{flex:2,width:'80%', alignItems:'center'}}>
               <View style={{flex:1, flexDirection:'row', alignItems:'center'}}>
                 <TextInput 
-                  style={styles.textForm,{flex:3}} 
+                  style={styles.textForm }
                   placeholder={"핸드폰번호"}
                   value={this.state.phone}
                   onChangeText={(phone) => this.setState({phone})}
                   />
-                <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressPhone}>
+                <TouchableOpacity style={{width:'100%'}} onPress={ this.onPressPhone }>
                   <Image source={require("../assets/images/main/button_phone.png")} />
                 </TouchableOpacity>
               </View>
@@ -559,27 +612,36 @@ class PhoneScreen extends React.Component {
                 />
               </View>
             </View>
-            <View style={styles.container}>
-            <CheckBox
-                title='전체동의'
-                checked={this.state.checked}
-              /></View>
-            <View style={styles.container}><CheckBox
-                title='개인정보 수집/이용 (필수)'
-                checked={this.state.checked}
-              /></View>
-            <View style={styles.container}><CheckBox
-                title='고유식별정보처리 (필수)'
-                checked={this.state.checked}
-              /></View>
-            <View style={styles.container}><CheckBox
-                title='통신사 이용약관 (필수)'
-                checked={this.state.checked}
-              /></View>
-            <View style={styles.container}><CheckBox
-                title='서비스 이용약관 (필수)'
-                checked={this.state.checked}
-              /></View>
+            <View style={styles.container} flexDirection='row'>
+              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck0}>
+                <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[0] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
+              </TouchableOpacity>
+              <Text style={{fontSize:11,marginTop:15}}>  전체동의</Text>
+            </View>
+            <View style={styles.container} flexDirection='row'>
+              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck1}>
+                <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[1] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
+              </TouchableOpacity>
+              <Text style={{fontSize:11,marginTop:15}}>  개인정보 수집/이용 (필수)</Text>
+            </View>
+            <View style={styles.container} flexDirection='row'>
+              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck2}>
+                <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[2] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
+              </TouchableOpacity>
+              <Text style={{fontSize:11,marginTop:15}}>  고유식별정보처리 (필수)</Text>
+            </View>
+            <View style={styles.container} flexDirection='row'>
+              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck3}>
+                <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[3] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
+              </TouchableOpacity>
+              <Text style={{fontSize:11,marginTop:15}}>  통신사 이용약관 (필수)</Text>
+            </View>
+            <View style={styles.container} flexDirection='row'>
+              <TouchableOpacity style={{width:'5%', marginLeft:-128,marginTop:15}}  onPress={ this.onPressCheck4}>
+                <Image style={{width:'100%', justifyContent:'center', alignItems:'center',resizeMode:'contain'}} source={ this.state.checked[4] == true ? require("../assets/images/login/check_full.png") : require("../assets/images/login/check_null.png")} />
+              </TouchableOpacity>
+              <Text style={{fontSize:11,marginTop:15}}>  서비스 이용약관 (필수)</Text>
+            </View>
           </ImageBackground>
         </View>
         <View style={{flex:3}}/>
@@ -623,7 +685,7 @@ class PasswordScreen extends React.Component {
           </View>
         </View>
         <View style={{flex:6, width:'100%',}}>
-          <Text style={{fontSize:16}}>A PAY 결제 비밀번호 재입력</Text>
+          <TextInput style={{fontSize:16}}/>
         </View>
         <View style={{flex:3}}/>
         <View>
@@ -658,7 +720,6 @@ class FinishScreen extends React.Component {
         style={{width: '100%', height: '100%'}}>
         <View style={{flex:8}}>
           <View style={styles.container}>
-            <Text style={{fontSize:66}}>끗</Text>
           </View>
         </View>
         <View style={{flex:3}}>
